@@ -1,4 +1,7 @@
 my android test projects.
 
-wifiscan
-: show Wi-Fi SSID by android.net.wifi.WifiManager
+- wifiscan
+show Wi-Fi SSID by android.net.wifi.WifiManager
+
+- record_and_play
+record and play 3gp audio
