@@ -19,6 +19,7 @@ import android.view.SurfaceView;
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, PreviewCallback {
     private SurfaceHolder holder;
 	private Camera camera;
+	private Bitmap bitmap;
 	private int[] rgbBuffer;
 	private byte[] yuvBuffer;
 	private YUV420toRGB8888 yuv2rgb;
@@ -49,13 +50,16 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		final Camera.Parameters params = camera.getParameters();
 
 		size = params.getPreviewSize();
-		detector = new FaceDetector(size.width, size.height, 1);
-		rgbBuffer = new int[size.width * size.height];
+		final int w = size.width, h = size.height;
 
-        yuv2rgb = new YUV420toRGB8888(size.width, size.height, 2, 3, 3);
+		detector = new FaceDetector(w, h, 1);
+		rgbBuffer = new int[w * h];
+		bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565);
+
+        yuv2rgb = new YUV420toRGB8888(w, h, 2, 3, 3);
 
         final int yuvPerBits = ImageFormat.getBitsPerPixel(params.getPreviewFormat());
-		yuvBuffer = new byte[size.width * size.height * yuvPerBits / 8];
+		yuvBuffer = new byte[w * h * yuvPerBits / 8];
 		camera.addCallbackBuffer(yuvBuffer);
 		camera.setPreviewCallbackWithBuffer(this);
 
@@ -80,8 +84,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		yuv2rgb.getFast(data, rgbBuffer);
 
 		canvas.drawBitmap(rgbBuffer, 0, w, 0, 0, w, h, false, null);
-		final Bitmap bmp = Bitmap.createBitmap(rgbBuffer, 0, w, w, h, Bitmap.Config.RGB_565);
-		if (detector.findFaces(bmp, face) == 1) {
+		bitmap.setPixels(rgbBuffer, 0, w, 0, 0, w, h);
+		if (detector.findFaces(bitmap, face) == 1) {
 			Face f = face[0];
 			f.getMidPoint(point);
 			float x = point.x, y = point.y;
