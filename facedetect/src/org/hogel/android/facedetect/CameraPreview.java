@@ -11,6 +11,7 @@ import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -21,9 +22,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	private YUV420toRGB8888 yuv2rgb;
 	private Size size;
 	private FaceDetector detector;
-	private FaceDetector.Face[] face = new FaceDetector.Face[1];
-	private PointF point = new PointF();
-	private Paint redPaint = new Paint();
+	private final FaceDetector.Face[] face = new FaceDetector.Face[1];
+	private final PointF point = new PointF();
+	private final Paint redPaint = new Paint();
+	private final CalcFPS fps = new CalcFPS();
 	
 	public CameraPreview(Context context) {
 		super(context);
@@ -76,6 +78,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			canvas.drawRect(x-fw, y-fh, x+fw, y+fh, redPaint);
 		}
 		holder.unlockCanvasAndPost(canvas);
+
+		Log.i("FaceDetector", "FPS: "+fps.calc());
+
 		camera.setPreviewCallback(this);
 	}
 }
