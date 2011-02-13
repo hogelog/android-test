@@ -79,7 +79,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		}
 		holder.unlockCanvasAndPost(canvas);
 
-		Log.i("FaceDetector", "FPS: "+fps.calc());
+		fps.calc();
+		Log.i("FaceDetector", String.format("FPS: %.1f, ave: %.1f", fps.current, fps.average));
 
 		camera.setPreviewCallback(this);
 	}

@@ -1,14 +1,22 @@
 package org.hogel.android.facedetect;
 
 public class CalcFPS {
+	private long frames = 0;
+	private long start = 0;
 	private long prev = 0;
+
+	public double current = 0;
+	public double average = 0;
+
 	public CalcFPS() {
-		prev = System.currentTimeMillis();
+		prev = start = System.currentTimeMillis();
 	}
-	public double calc() {
-		long current = System.currentTimeMillis();
-		double fps = 1000.0 / (current - prev);
-		prev = current;
-		return fps;
+
+	public void calc() {
+		long now = System.currentTimeMillis();
+		++frames;
+		current = 1000.0 / (now - prev);
+		average = frames * 1000.0 / (now - start);
+		prev = now;
 	}
 }
