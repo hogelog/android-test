@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ImageFormat;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.hardware.Camera;
@@ -19,6 +20,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private SurfaceHolder holder;
 	private Camera camera;
 	private int[] rgbBuffer;
+	private byte[] yuvBuffer;
 	private YUV420toRGB8888 yuv2rgb;
 	private Size size;
 	private FaceDetector detector;
@@ -44,12 +46,20 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
         camera = Camera.open();
-		camera.setPreviewCallback(this);
-		camera.startPreview();
-		size = camera.getParameters().getPreviewSize();
-        yuv2rgb = new YUV420toRGB8888(size.width, size.height, 2, 3, 3);
-		rgbBuffer = new int[size.width * size.height];
+		final Camera.Parameters params = camera.getParameters();
+
+		size = params.getPreviewSize();
 		detector = new FaceDetector(size.width, size.height, 1);
+		rgbBuffer = new int[size.width * size.height];
+
+        yuv2rgb = new YUV420toRGB8888(size.width, size.height, 2, 3, 3);
+
+        final int yuvPerBits = ImageFormat.getBitsPerPixel(params.getPreviewFormat());
+		yuvBuffer = new byte[size.width * size.height * yuvPerBits / 8];
+		camera.addCallbackBuffer(yuvBuffer);
+		camera.setPreviewCallbackWithBuffer(this);
+
+		camera.startPreview();
 	}
 
 	@Override
@@ -58,6 +68,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     	camera.stopPreview();
     	camera.release();
 	}
+
 
 	@Override
 	public void onPreviewFrame(byte[] data, Camera camera) {
