@@ -9,12 +9,12 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
-import android.hardware.Camera.Size;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, PreviewCallback {
     private SurfaceHolder holder;
@@ -23,20 +23,24 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	private int[] rgbBuffer;
 	private byte[] yuvBuffer;
 	private YUV420toRGB8888 yuv2rgb;
-	private Size size;
 	private FaceDetector detector;
 	private final FaceDetector.Face[] face = new FaceDetector.Face[1];
 	private final PointF point = new PointF();
 	private final Paint redPaint = new Paint();
 	private final CalcFPS fps = new CalcFPS();
+
+	private final int width;
+	private final int height;
 	
-	public CameraPreview(Context context) {
+	public CameraPreview(Context context, int width, int height) {
 		super(context);
 
         holder = getHolder();
         holder.addCallback(this);
         redPaint.setColor(Color.RED);
         redPaint.setStyle(Paint.Style.STROKE);
+        this.width = width;
+        this.height = height;
 	}
 
 	@Override
@@ -48,9 +52,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	public void surfaceCreated(SurfaceHolder holder) {
         camera = Camera.open();
 		final Camera.Parameters params = camera.getParameters();
+		params.setPreviewSize(width, height);
+		camera.setParameters(params);
 
-		size = params.getPreviewSize();
-		final int w = size.width, h = size.height;
+		final int w = width, h = height;
 
 		detector = new FaceDetector(w, h, 1);
 		rgbBuffer = new int[w * h];
@@ -71,6 +76,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     	camera.setPreviewCallback(null);
     	camera.stopPreview();
     	camera.release();
+
+    	Toast.makeText(getContext(), String.format("FPS Average: %.1f", fps.average), Toast.LENGTH_SHORT).show();
 	}
 
 
@@ -80,7 +87,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
 		final Canvas canvas = holder.lockCanvas();
 
-		final int w = size.width, h = size.height;
+		final int w = width, h = height;
 		yuv2rgb.getFast(data, rgbBuffer);
 
 		canvas.drawBitmap(rgbBuffer, 0, w, 0, 0, w, h, false, null);

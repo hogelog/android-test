@@ -14,7 +14,7 @@ public class FaceDetectActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        final CameraPreview preview = new CameraPreview(this);
+        final CameraPreview preview = new CameraPreview(this, 480, 320);
         setContentView(preview);
     }
 }
