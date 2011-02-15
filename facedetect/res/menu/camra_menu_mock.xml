@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+  xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:id="@+id/camera_sizes">
+    <menu>
+        <group android:id="@+id/camera_size_group" android:checkableBehavior="single">
+            <item android:id="@+id/camera_size_item" />
+        </group>
+    </menu>
+  </item>
+</menu>
