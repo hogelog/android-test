@@ -77,8 +77,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
 	@Override
 	public void onPreviewFrame(byte[] data, Camera camera) {
-		stopPreview();
-
 		final Canvas canvas = holder.lockCanvas();
 
 		final int w = size.width, h = size.height;
@@ -98,7 +96,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		fps.calc();
 		Log.i("FaceDetect", String.format("FPS: %.1f, ave: %.1f", fps.current, fps.average));
 
-		startPreview();
+		camera.addCallbackBuffer(yuvBuffer);
 	}
 
 	public void startPreview() {
