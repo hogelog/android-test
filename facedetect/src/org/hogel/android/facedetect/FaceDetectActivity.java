@@ -19,7 +19,7 @@ public class FaceDetectActivity extends Activity {
 	private static final String PREF_CAMERA_H = "CAM_H";
 
 	Camera camera;
-	CameraPreview preview;
+	CameraLayout preview;
 	SharedPreferences prefs;
 	List<Camera.Size> supportedSizes;
 
@@ -50,7 +50,7 @@ public class FaceDetectActivity extends Activity {
         	setCameraSize(cam_w, cam_h);
         }
 
-        preview = new CameraPreview(this, camera);
+        preview = new CameraLayout(this, camera);
 		setContentView(preview);
 	}
 
@@ -107,7 +107,7 @@ public class FaceDetectActivity extends Activity {
 			edit.commit();
 
 			setCameraSize(size.width, size.height);
-			preview = new CameraPreview(this, camera);
+			preview = new CameraLayout(this, camera);
 			setContentView(preview);
 		}
 		return true;
