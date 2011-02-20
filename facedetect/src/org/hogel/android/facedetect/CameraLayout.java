@@ -67,9 +67,9 @@ public class CameraLayout extends FrameLayout implements PreviewCallback {
 		final int yuvPerBits = ImageFormat.getBitsPerPixel(params.getPreviewFormat());
 		yuvBuffer = new byte[w * h * yuvPerBits / 8];
 
-		rect = new float[]{ 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f };
+		rect = new float[8];
 
-		paintView = new GLView(context, rect);
+		paintView = new GLView(context);
 		
 		cameraPreview = new CameraView(context, camera);
 
@@ -115,32 +115,34 @@ public class CameraLayout extends FrameLayout implements PreviewCallback {
 		}
 	}
 	public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer {
-		protected FloatBuffer makeFloatBuffer(float[] arr) {
-			ByteBuffer bb = ByteBuffer.allocateDirect(arr.length*4);
+		protected FloatBuffer makeFloatBuffer(int length) {
+			ByteBuffer bb = ByteBuffer.allocateDirect(length*4);
 			bb.order(ByteOrder.nativeOrder());
 			FloatBuffer fb = bb.asFloatBuffer();
-			fb.put(arr);
-			fb.position(0);
 			return fb;
 		}
 
-	    final FloatBuffer buffer;
-	    int size;
+	    private final FloatBuffer buffer;
+	    private final int size = 4;
+	    private boolean hasFace = false;
 
-	    public GLView(Context context, float[] points) {
+	    public GLView(Context context) {
 			super(context);
-			size = points.length / 2;
-			buffer = makeFloatBuffer(points);
+			buffer = makeFloatBuffer(size*2);
 	        setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 			getHolder().setFormat(PixelFormat.TRANSPARENT);
 			setRenderer(this);
 		}
 
-		public void setPoints(float[] points) {
+		public void face(float[] points) {
+			hasFace = true;
 			buffer.clear();
 			buffer.put(points);
 			buffer.position(0);
-			size = points.length / 2;
+		}
+
+		public void noface() {
+			hasFace = false;
 		}
 
 		@Override
@@ -148,11 +150,12 @@ public class CameraLayout extends FrameLayout implements PreviewCallback {
 			gl.glClearColor(0f, 0f, 0f, 0f);
 	        gl.glClear(GL10.GL_COLOR_BUFFER_BIT|GL10.GL_DEPTH_BUFFER_BIT);
 
-	        gl.glColor4f(1f, 0f, 0f, 1.0f);
-	        
-	        gl.glVertexPointer(2, GL10.GL_FLOAT, 0, buffer);
-	        gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-	        gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, size);
+	        if (hasFace) {
+	        	gl.glColor4f(1f, 0f, 0f, 1.0f);
+	        	gl.glVertexPointer(2, GL10.GL_FLOAT, 0, buffer);
+	        	gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+	        	gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, size);
+	        }
 		}
 
 		@Override
@@ -189,7 +192,9 @@ public class CameraLayout extends FrameLayout implements PreviewCallback {
 			rect[2] = x + fw; rect[3] = y - fh;
 			rect[4] = x - fw; rect[5] = y + fh;
 			rect[6] = x + fw; rect[7] = y + fh;
-			paintView.setPoints(rect);
+			paintView.face(rect);
+		} else {
+			paintView.noface();
 		}
 
 		fps.calc();
